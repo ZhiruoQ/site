@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Flying Balloons</title>
+    <style>
+        canvas {
+            border: 1px solid black;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas" width="800" height="600"></canvas>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const colors = ['red', 'orange', 'yellow', 'green', 'black', 'blue', 'purple'];
+        const burstAltitude = 150; 
+        let balloons = [];
+
+        class Balloon {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = canvas.height;
+                this.speed = Math.random() * 3 + 1;
+                this.color = colors[Math.floor(Math.random() * colors.length)];
+                this.diameter = 20;
+                this.burst = false;
+            }
+
+            update() {
+                if (!this.burst) {
+                    this.y -= this.speed;
+                    this.diameter += 0.2;
+                    if (this.y < burstAltitude) this.burst = true;
+                }
+            }
+
+            draw() {
+                if (!this.burst) {
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.diameter/2, 0, Math.PI * 2);
+                    ctx.fillStyle = this.color;
+                    ctx.fill();
+                    ctx.stroke();
+                }
+            }
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+           
+            if (Math.random() < 0.05) {
+                balloons.push(new Balloon());
+            }
+
+           
+            balloons.forEach((balloon, index) => {
+                balloon.update();
+                balloon.draw();
+                if (balloon.burst) {
+                    setTimeout(() => {
+                        balloons.splice(index, 1);
+                    }, index * 100); 
+                }
+            });
+
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+    </script>
+</body>
+</html>
