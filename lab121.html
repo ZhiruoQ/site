@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        canvas {
+            border: 1px solid black;
+        }
+
+        #infoTable {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: white;
+            box-shadow: 0 0 10px rgba(0,0,0,0.2);
+            display: none;
+        }
+
+        #celestialTable {
+            border-collapse: collapse;
+            width: 600px;
+        }
+
+        #celestialTable th, #celestialTable td {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+
+        #celestialTable th {
+            background-color: #f5f5f5;
+            cursor: pointer;
+        }
+
+        .color-block {
+            width: 20px;
+            height: 20px;
+            display: inline-block;
+            vertical-align: middle;
+            margin-right: 5px;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="solarCanvas" width="800" height="600"></canvas>
+    <div id="infoTable">
+        <table id="celestialTable">
+            <thead>
+                <tr>
+                    <th>Name ▼</th>
+                    <th>Mass (kg) ▼</th>
+                    <th>Orbit Radius (km) ▼</th>
+                    <th>Color ▼</th>
+                    <th>Diameter (km) ▼</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <script>
+        // 天体数据（示例）
+        const celestialBodies = [
+            { name: 'Sun', mass: 1.989e30, orbitRadius: 0, color: '#FFD700', diameter: 1.3927e6 },
+            { name: 'Mercury', mass: 3.301e23, orbitRadius: 57.9e6, color: '#A0522D', diameter: 4879 },
+            { name: 'Venus', mass: 4.867e24, orbitRadius: 108.2e6, color: '#DEB887', diameter: 12104 },
+            { name: 'Earth', mass: 5.972e24, orbitRadius: 149.6e6, color: '#4169E1', diameter: 12742 },
+            { name: 'Mars', mass: 6.417e23, orbitRadius: 227.9e6, color: '#CD5C5C', diameter: 6779 },
+            { name: 'Jupiter', mass: 1.898e27, orbitRadius: 778.3e6, color: '#DAA520', diameter: 139820 },
+            { name: 'Saturn', mass: 5.683e26, orbitRadius: 1.429e9, color: '#F4A460', diameter: 116460 },
+            { name: 'Uranus', mass: 8.681e25, orbitRadius: 2.871e9, color: '#87CEEB', diameter: 50724 },
+            { name: 'Neptune', mass: 1.024e26, orbitRadius: 4.498e9, color: '#4682B4', diameter: 49244 },
+            { name: 'Pluto', mass: 1.309e22, orbitRadius: 5.906e9, color: '#A9A9A9', diameter: 2376 }
+        ];
+
+        // 表格控制逻辑
+        let isTableVisible = false;
+        let currentSortKey = 'name';
+        let sortDirection = 1;
+
+        document.addEventListener('click', toggleTable);
+
+        function toggleTable(e) {
+            if (e.target.tagName === 'TH') return; // 防止点击表头时触发
+            const table = document.getElementById('infoTable');
+            isTableVisible = !isTableVisible;
+            table.style.display = isTableVisible ? 'block' : 'none';
+            if (isTableVisible) renderTable();
+        }
+
+        function renderTable() {
+            const sortedData = [...celestialBodies].sort((a, b) => {
+                if (typeof a[currentSortKey] === 'number') {
+                    return (a[currentSortKey] - b[currentSortKey]) * sortDirection;
+                }
+                return a[currentSortKey].localeCompare(b[currentSortKey]) * sortDirection;
+            });
+
+            const tbody = document.querySelector('#celestialTable tbody');
+            tbody.innerHTML = sortedData.map(body => `
+                <tr>
+                    <td>${body.name}</td>
+                    <td>${body.mass.toExponential(2)}</td>
+                    <td>${(body.orbitRadius/1e6).toFixed(1)}M</td>
+                    <td>
+                        <div class="color-block" style="background:${body.color}"></div>
+                        ${body.color}
+                    </td>
+                    <td>${body.diameter.toLocaleString()}</td>
+                </tr>
+            `).join('');
+        }
+
+        // 排序功能
+        document.querySelectorAll('th').forEach(th => {
+            th.addEventListener('click', () => {
+                const keyMap = {
+                    'Name ▼': 'name',
+                    'Mass (kg) ▼': 'mass',
+                    'Orbit Radius (km) ▼': 'orbitRadius',
+                    'Color ▼': 'color',
+                    'Diameter (km) ▼': 'diameter'
+                };
+                
+                const newKey = keyMap[th.innerText];
+                if (currentSortKey === newKey) {
+                    sortDirection *= -1;
+                } else {
+                    currentSortKey = newKey;
+                    sortDirection = 1;
+                }
+                
+                // 更新表头指示
+                document.querySelectorAll('th').forEach(h => {
+                    h.innerHTML = h.innerHTML.replace('▼', '').replace('▲', '');
+                });
+                th.innerHTML += sortDirection === 1 ? ' ▼' : ' ▲';
+                
+                renderTable();
+            });
+        });
+
+        // 简单Canvas绘制示例（实际模拟需要更复杂的实现）
+        const canvas = document.getElementById('solarCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        function drawSolarSystem() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // 绘制太阳
+            ctx.beginPath();
+            ctx.arc(canvas.width/2, canvas.height/2, 20, 0, Math.PI*2);
+            ctx.fillStyle = '#FFD700';
+            ctx.fill();
+
+            // 这里可以添加行星轨道和行星的绘制逻辑
+        }
+        drawSolarSystem();
+    </script>
+</body>
+</html>
